@@ -198,7 +198,7 @@ image-tagger/
 ![Tags Download Interface](docs/image-crawler-tags-download.png)
 
 ### Image Details / Information
-![Tags Download Interface](docs/image-tagger-image-information.png)
+![Image Details](docs/image-tagger-image-information.png)
 
 ## License
 
