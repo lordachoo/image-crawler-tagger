@@ -1,0 +1,415 @@
+{% extends 'base.html' %}
+
+{% block title %}Browse Images{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1>
+                {% if current_tag %}
+                Images tagged with "{{ current_tag }}"
+                {% else %}
+                All Images
+                {% endif %}
+            </h1>
+            
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="tagFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    {% if current_tag %}
+                    Filtered by: {{ current_tag }}
+                    {% else %}
+                    Filter by Tag
+                    {% endif %}
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="tagFilterDropdown">
+                    {% if current_tag %}
+                    <li><a class="dropdown-item" href="{{ url_for('main.images') }}">Show All Images</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    {% endif %}
+                    
+                    {% for tag in tags %}
+                    <li>
+                        <a class="dropdown-item {% if current_tag == tag.name %}active{% endif %}" 
+                           href="{{ url_for('main.images', tag=tag.name) }}">
+                            {{ tag.name }} ({{ tag.images|length }})
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Quick tagging controls -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Filter Options</h5>
+                        <form action="{{ url_for('main.images') }}" method="get" class="mb-3">
+                            <div class="mb-3">
+                                <label for="tag" class="form-label">Filter by Tag</label>
+                                <input type="text" class="form-control" id="tag" name="tag" value="{{ request.args.get('tag', '') }}" list="available-tags">
+                            </div>
+                            <div class="mb-3">
+                                <label for="source" class="form-label">Filter by Source</label>
+                                <input type="text" class="form-control" id="source" name="source" value="{{ request.args.get('source', '') }}">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Apply Filters</button>
+                            <a href="{{ url_for('main.images') }}" class="btn btn-secondary">Clear Filters</a>
+                        </form>
+                        
+                        <h5 class="card-title mt-4">Common Tags</h5>
+                        <div class="common-tags">
+                            {% for tag in all_tags[:10] %}
+                            <button type="button" class="btn btn-sm btn-outline-secondary me-1 mb-1 common-tag-btn" data-tag-name="{{ tag.name }}">
+                                {{ tag.name }}
+                            </button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Bulk Tag Selected Images</h5>
+                        <div class="input-group">
+                            <input type="text" id="quick-tag-input" class="form-control" placeholder="Enter a tag..." list="available-tags">
+                            <datalist id="available-tags">
+                                {% for tag in all_tags %}
+                                <option value="{{ tag.name }}">{{ tag.name }}</option>
+                                {% endfor %}
+                            </datalist>
+                            <button id="add-tag-to-selected" class="btn btn-success" disabled>
+                                <i class="bi bi-tags"></i> Tag Selected
+                            </button>
+                        </div>
+                        <div class="form-text mt-2">Select multiple images below then add a tag to all of them at once.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% if images %}
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 mb-4">
+            {% for image in images %}
+            <div class="col">
+                <div class="card h-100">
+                    <div class="card-img-container position-relative">
+                        <div class="image-selection">
+                            <input type="checkbox" class="image-selector form-check-input position-absolute top-0 start-0 m-2" 
+                                data-image-id="{{ image.id }}">
+                        </div>
+                        <a href="{{ url_for('main.view_image', image_id=image.id) }}">
+                            <img src="/storage/{{ image.crawl_job_id }}/{{ image.filename }}" class="card-img-top img-thumbnail" 
+                                alt="{{ image.filename }}" style="height: 200px; object-fit: cover;">
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title text-truncate">{{ image.filename }}</h5>
+                        <p class="card-text">
+                            <small class="text-muted">{{ (image.file_size / 1024)|round(1) }} KB</small>
+                        </p>
+
+                        <div class="tag-area" data-image-id="{{ image.id }}">
+                            {% if image.tags %}
+                            {% for tag in image.tags %}
+                            <span class="badge bg-secondary tag-badge me-1 mb-1" data-tag-name="{{ tag.name }}">
+                                {{ tag.name }}
+                                <button type="button" class="btn-close btn-close-white ms-1" 
+                                    onclick="removeTag('{{ image.id }}', '{{ tag.name }}')" aria-label="Remove tag"></button>
+                            </span>
+                            {% endfor %}
+                            {% endif %}
+                        </div>
+                        <div class="quick-tag-add mt-2">
+                            <div class="input-group input-group-sm">
+                                <input type="text" class="form-control single-tag-input" 
+                                       placeholder="Add tag..." data-image-id="{{ image.id }}" list="available-tags">
+                                <button class="btn btn-outline-secondary btn-sm add-single-tag" 
+                                        data-image-id="{{ image.id }}">
+                                    <i class="bi bi-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{{ url_for('main.view_image', image_id=image.id) }}" class="btn btn-sm btn-primary">
+                            <i class="bi bi-eye"></i> View
+                        </a>
+                        <a href="{{ url_for('crawl.view_job', job_id=image.crawl_job_id) }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-folder"></i> Job
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if pagination.pages > 1 %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if pagination.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('main.images', page=pagination.prev_num, tag=current_tag) }}">
+                        Previous
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+                </li>
+                {% endif %}
+                
+                {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if page_num %}
+                        {% if page_num == pagination.page %}
+                        <li class="page-item active">
+                            <a class="page-link" href="#">{{ page_num }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('main.images', page=page_num, tag=current_tag) }}">{{ page_num }}</a>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#">...</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if pagination.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('main.images', page=pagination.next_num, tag=current_tag) }}">
+                        Next
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        {% else %}
+        <div class="alert alert-info">
+            {% if current_tag %}
+            <i class="bi bi-info-circle me-2"></i>
+            No images found with tag "{{ current_tag }}".
+            <a href="{{ url_for('main.images') }}">Show all images</a> instead.
+            {% else %}
+            <i class="bi bi-info-circle me-2"></i>
+            No images found. <a href="{{ url_for('crawl.new_crawl') }}">Create a new crawl job</a> to get started.
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Track selected image IDs
+    let selectedImages = [];
+    
+    // Initialize UI elements
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle image selection via checkboxes
+        const checkboxes = document.querySelectorAll('.image-selector');
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const imageId = this.dataset.imageId;
+                if (this.checked) {
+                    selectedImages.push(imageId);
+                } else {
+                    selectedImages = selectedImages.filter(id => id !== imageId);
+                }
+                
+                // Update UI based on selection
+                updateSelectedUI();
+            });
+        });
+        
+        // Handle bulk tagging
+        document.getElementById('add-tag-to-selected').addEventListener('click', function() {
+            const tagInput = document.getElementById('quick-tag-input');
+            const tagName = tagInput.value.trim();
+            
+            if (tagName && selectedImages.length > 0) {
+                addTagToBulkImages(selectedImages, tagName);
+                tagInput.value = '';
+            }
+        });
+        
+        // Handle individual image tagging
+        const singleTagButtons = document.querySelectorAll('.add-single-tag');
+        singleTagButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const imageId = this.dataset.imageId;
+                const inputField = document.querySelector(`.single-tag-input[data-image-id="${imageId}"]`);
+                const tagName = inputField.value.trim();
+                
+                if (tagName) {
+                    addTagToSingleImage(imageId, tagName);
+                    inputField.value = '';
+                }
+            });
+        });
+        
+        // Handle enter key for individual image tag input fields
+        const singleTagInputs = document.querySelectorAll('.single-tag-input');
+        singleTagInputs.forEach(input => {
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const imageId = this.dataset.imageId;
+                    const tagName = this.value.trim();
+                    
+                    if (tagName) {
+                        addTagToSingleImage(imageId, tagName);
+                        this.value = '';
+                    }
+                }
+            });
+        });
+        
+        // Handle enter key for bulk tag input
+        document.getElementById('quick-tag-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !document.getElementById('add-tag-to-selected').disabled) {
+                e.preventDefault();
+                const tagName = this.value.trim();
+                
+                if (tagName && selectedImages.length > 0) {
+                    addTagToBulkImages(selectedImages, tagName);
+                    this.value = '';
+                }
+            }
+        });
+    });
+    
+    // Update UI based on selected images
+    function updateSelectedUI() {
+        const addTagButton = document.getElementById('add-tag-to-selected');
+        if (selectedImages.length > 0) {
+            addTagButton.disabled = false;
+            addTagButton.textContent = `Tag ${selectedImages.length} Selected Images`;
+        } else {
+            addTagButton.disabled = true;
+            addTagButton.innerHTML = '<i class="bi bi-tags"></i> Tag Selected';
+        }
+    }
+    
+    // Add a tag to a single image
+    function addTagToSingleImage(imageId, tagName) {
+        fetch(`/api/image/${imageId}/tags`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ tag_name: tagName })
+        })
+        .then(response => {
+            if (response.ok) {
+                // Get updated tags for the image
+                return fetch(`/api/image/${imageId}/tags`);
+            } else {
+                throw new Error('Failed to add tag');
+            }
+        })
+        .then(response => response.json())
+        .then(tags => {
+            updateImageTags(imageId, tags);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error adding tag');
+        });
+    }
+    
+    // Add a tag to multiple images
+    function addTagToBulkImages(imageIds, tagName) {
+        fetch('/api/images/bulk-tag', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ image_ids: imageIds, tag: tagName })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update each image's tags
+                for (const imageUpdate of data.updates) {
+                    updateImageTags(imageUpdate.image_id, imageUpdate.tags);
+                }
+                
+                // Provide feedback
+                alert(`Added tag "${tagName}" to ${imageIds.length} images`);
+                
+                // Clear selection after bulk operation
+                selectedImages = [];
+                document.querySelectorAll('.image-selector').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                updateSelectedUI();
+            } else {
+                alert('Error adding tags: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error adding tags');
+        });
+    }
+    
+    // Remove a tag from an image
+    function removeTag(imageId, tagName) {
+        fetch(`/api/image/${imageId}/tags`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ tag_name: tagName })
+        })
+        .then(response => {
+            if (response.ok) {
+                // Get updated tags for the image
+                return fetch(`/api/image/${imageId}/tags`);
+            } else {
+                throw new Error('Failed to remove tag');
+            }
+        })
+        .then(response => response.json())
+        .then(tags => {
+            updateImageTags(imageId, tags);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error removing tag');
+        });
+    }
+    
+    // Update the displayed tags for an image
+    function updateImageTags(imageId, tags) {
+        const tagArea = document.querySelector(`.tag-area[data-image-id="${imageId}"]`);
+        tagArea.innerHTML = '';
+        
+        tags.forEach(tag => {
+            const tagBadge = document.createElement('span');
+            tagBadge.className = 'badge bg-secondary tag-badge me-1 mb-1';
+            tagBadge.dataset.tagName = tag.name;
+            
+            tagBadge.innerHTML = `
+                ${tag.name}
+                <button type="button" class="btn-close btn-close-white ms-1" 
+                    onclick="removeTag('${imageId}', '${tag.name}')" aria-label="Remove tag"></button>
+            `;
+            
+            tagArea.appendChild(tagBadge);
+        });
+    }
+</script>
+{% endblock %}

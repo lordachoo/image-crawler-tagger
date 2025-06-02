@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}Tag: {{ tag.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('tag.list_tags') }}">Tags</a></li>
+                <li class="breadcrumb-item active">{{ tag.name }}</li>
+            </ol>
+        </nav>
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Images tagged with "{{ tag.name }}"</h1>
+            <a href="{{ url_for('tag.download_tag', tag_name=tag.name) }}" class="btn btn-primary">
+                <i class="bi bi-download me-2"></i>Download All
+            </a>
+        </div>
+        
+        {% if images %}
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 mb-4">
+            {% for image in images %}
+            <div class="col">
+                <div class="card h-100">
+                    <a href="{{ url_for('main.view_image', image_id=image.id) }}">
+                        <img src="/storage/{{ image.crawl_job_id }}/{{ image.filename }}" class="card-img-top img-thumbnail" 
+                             alt="{{ image.filename }}" style="height: 200px; object-fit: cover;">
+                    </a>
+                    <div class="card-body">
+                        <h5 class="card-title text-truncate">{{ image.filename }}</h5>
+                        <p class="card-text">
+                            <small class="text-muted">{{ (image.file_size / 1024)|round(1) }} KB</small>
+                            {% if image.tags %}
+                            <br>
+                            {% for img_tag in image.tags %}
+                            <a href="{{ url_for('tag.view_tag', tag_name=img_tag.name) }}" class="badge bg-secondary text-decoration-none">
+                                {{ img_tag.name }}
+                            </a>
+                            {% endfor %}
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{{ url_for('main.view_image', image_id=image.id) }}" class="btn btn-sm btn-primary">
+                            <i class="bi bi-eye"></i> View
+                        </a>
+                        <a href="{{ url_for('crawl.view_job', job_id=image.crawl_job_id) }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-folder"></i> Job
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if pagination.pages > 1 %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if pagination.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('tag.view_tag', tag_name=tag.name, page=pagination.prev_num) }}">
+                        Previous
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+                </li>
+                {% endif %}
+                
+                {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if page_num %}
+                        {% if page_num == pagination.page %}
+                        <li class="page-item active">
+                            <a class="page-link" href="#">{{ page_num }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('tag.view_tag', tag_name=tag.name, page=page_num) }}">{{ page_num }}</a>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#">...</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if pagination.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('tag.view_tag', tag_name=tag.name, page=pagination.next_num) }}">
+                        Next
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        {% else %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            No images found with tag "{{ tag.name }}".
+        </div>
+        <p class="mt-4">
+            <a href="{{ url_for('main.images') }}" class="btn btn-primary">
+                <i class="bi bi-images me-2"></i>Browse All Images
+            </a>
+        </p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+
+{% block title %}View Image{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('main.images') }}">Images</a></li>
+                <li class="breadcrumb-item active">View Image</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h2 class="mb-0 text-truncate">{{ image.filename }}</h2>
+            </div>
+            <div class="card-body p-0">
+                <img src="/storage/{{ image.crawl_job_id }}/{{ image.filename }}" class="img-fluid w-100" alt="{{ image.filename }}">
+            </div>
+            <div class="card-footer">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">{{ (image.file_size / 1024)|round(1) }} KB | {{ image.file_type }}</small>
+                    </div>
+                    <div>
+                        <a href="/storage/{{ image.crawl_job_id }}/{{ image.filename }}" class="btn btn-sm btn-outline-primary" download>
+                            <i class="bi bi-download"></i> Download
+                        </a>
+                        <a href="{{ url_for('crawl.view_job', job_id=image.crawl_job_id) }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-folder"></i> View Job
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4 class="mb-0">Image Information</h4>
+            </div>
+            <div class="card-body">
+                <p><strong>Filename:</strong> {{ image.filename }}</p>
+                <p><strong>Type:</strong> {{ image.file_type }}</p>
+                <p><strong>Size:</strong> {{ (image.file_size / 1024)|round(1) }} KB</p>
+                <p><strong>Crawled From:</strong> 
+                   <a href="{{ image.original_url }}" target="_blank" class="text-truncate d-inline-block" style="max-width: 200px;">
+                       {{ image.original_url if image.original_url else 'Unknown' }}
+                   </a>
+                </p>
+                <p><strong>Added:</strong> {{ image.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4 class="mb-0">Tags</h4>
+            </div>
+            <div class="card-body">
+                <div id="current-tags">
+                    {% if image.tags %}
+                    {% for tag in image.tags %}
+                    <span class="badge bg-secondary me-1 mb-1 p-2">
+                        {{ tag.name }}
+                        <button type="button" class="btn-close btn-close-white ms-1" 
+                                onclick="removeTag('{{ tag.name }}')" aria-label="Remove tag"></button>
+                    </span>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-muted">No tags yet. Add tags below.</p>
+                    {% endif %}
+                </div>
+                
+                <hr>
+                
+                <form id="tag-form" class="mt-3">
+                    <div class="input-group">
+                        <input type="text" id="tag-input" class="form-control" placeholder="Add a tag..." list="tag-suggestions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-plus-lg"></i> Add
+                        </button>
+                    </div>
+                    
+                    <datalist id="tag-suggestions">
+                        {% for tag in all_tags %}
+                        <option value="{{ tag.name }}">
+                        {% endfor %}
+                    </datalist>
+                    
+                    <div class="form-text">Press Enter to add. Tags are case-insensitive.</div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Navigation</h4>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('main.images') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-grid-3x3"></i> Back to Gallery
+                    </a>
+                    {% if image.tags %}
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle w-100" type="button" 
+                                id="relatedImagesDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            Browse Images by Tag
+                        </button>
+                        <ul class="dropdown-menu w-100" aria-labelledby="relatedImagesDropdown">
+                            {% for tag in image.tags %}
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('main.images', tag=tag.name) }}">
+                                    {{ tag.name }} ({{ tag.images|length }})
+                                </a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Function to add a new tag
+    document.getElementById('tag-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const tagInput = document.getElementById('tag-input');
+        const tagName = tagInput.value.trim().toLowerCase();
+        
+        if (tagName) {
+            // Send API request to add tag
+            axios.post('/api/image/{{ image.id }}/tags', {
+                tag_name: tagName
+            })
+            .then(function(response) {
+                // Clear input
+                tagInput.value = '';
+                
+                // Refresh page to show updated tags
+                window.location.reload();
+            })
+            .catch(function(error) {
+                console.error('Error adding tag:', error);
+                alert('Failed to add tag. Please try again.');
+            });
+        }
+    });
+    
+    // Function to remove a tag
+    function removeTag(tagName) {
+        if (confirm(`Are you sure you want to remove the tag "${tagName}"?`)) {
+            // Send API request to remove tag
+            axios.delete('/api/image/{{ image.id }}/tags', {
+                data: { tag_name: tagName }
+            })
+            .then(function(response) {
+                // Refresh page to show updated tags
+                window.location.reload();
+            })
+            .catch(function(error) {
+                console.error('Error removing tag:', error);
+                alert('Failed to remove tag. Please try again.');
+            });
+        }
+    }
+</script>
+{% endblock %}

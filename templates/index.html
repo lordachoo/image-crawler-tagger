@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Image Tagger - Home{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="jumbotron bg-light p-5 rounded">
+            <h1 class="display-4">Image Tagger</h1>
+            <p class="lead">Crawl websites for images, view and tag them easily.</p>
+            <hr class="my-4">
+            <p>Start by creating a new crawl job or browse existing images.</p>
+            <a class="btn btn-primary btn-lg" href="{{ url_for('crawl.new_crawl') }}" role="button">
+                <i class="bi bi-plus-circle me-2"></i>New Crawl
+            </a>
+            <a class="btn btn-secondary btn-lg ms-2" href="{{ url_for('main.images') }}" role="button">
+                <i class="bi bi-images me-2"></i>Browse Images
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h1 class="card-title text-primary">{{ total_images }}</h1>
+                <p class="card-text">Total Images</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h1 class="card-title text-success">{{ total_tags }}</h1>
+                <p class="card-text">Total Tags</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h1 class="card-title text-info">{{ total_jobs }}</h1>
+                <p class="card-text">Crawl Jobs</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if recent_jobs %}
+<div class="row mt-5">
+    <div class="col-md-12">
+        <h2>Recent Crawl Jobs</h2>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>URL</th>
+                        <th>Status</th>
+                        <th>Images</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for job in recent_jobs %}
+                    <tr>
+                        <td>{{ job.url }}</td>
+                        <td>
+                            {% if job.status == 'pending' %}
+                            <span class="badge bg-secondary">Pending</span>
+                            {% elif job.status == 'running' %}
+                            <span class="badge bg-primary">Running</span>
+                            {% elif job.status == 'completed' %}
+                            <span class="badge bg-success">Completed</span>
+                            {% elif job.status == 'failed' %}
+                            <span class="badge bg-danger">Failed</span>
+                            {% else %}
+                            <span class="badge bg-warning">{{ job.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ job.images_downloaded }} / {{ job.images_found }}</td>
+                        <td>{{ job.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            <a href="{{ url_for('crawl.view_job', job_id=job.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <a href="{{ url_for('crawl.list_jobs') }}" class="btn btn-outline-secondary">View All Jobs</a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

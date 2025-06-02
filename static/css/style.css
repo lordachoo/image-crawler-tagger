@@ -1,0 +1,147 @@
+/* Main styling for Image Tagger application */
+
+/* General styling */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.container {
+    flex: 1;
+}
+
+/* Card styling for image thumbnails */
+.card-img-top {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+/* Image details page */
+.img-fluid.w-100 {
+    max-height: 70vh;
+    object-fit: contain;
+}
+
+/* Tag styling */
+.badge {
+    font-size: 0.9rem;
+    font-weight: normal;
+}
+
+/* Fix for pagination */
+.pagination {
+    margin-bottom: 0;
+}
+
+/* Footer styling */
+.footer {
+    margin-top: auto;
+}
+
+/* Job status badges */
+.badge.bg-secondary {
+    background-color: #6c757d !important;
+}
+
+.badge.bg-primary {
+    background-color: #0d6efd !important;
+}
+
+/* Quick tagging styles */
+.image-selection {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 10;
+}
+
+.image-selector {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    margin: 10px !important;
+    border: 2px solid #fff;
+    box-shadow: 0 0 5px rgba(0,0,0,0.3);
+}
+
+.tag-area {
+    min-height: 30px;
+}
+
+.card-img-container {
+    position: relative;
+}
+
+.quick-tag-add {
+    margin-top: 10px;
+}
+
+.tag-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35em 0.65em;
+}
+
+.tag-badge .btn-close {
+    font-size: 0.6em;
+    margin-left: 0.5em;
+    margin-right: -0.25em;
+}
+
+.badge.bg-success {
+    background-color: #198754 !important;
+}
+
+.badge.bg-danger {
+    background-color: #dc3545 !important;
+}
+
+.badge.bg-warning {
+    background-color: #ffc107 !important;
+}
+
+/* Card hover effect */
+.card {
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Truncate long text */
+.text-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+/* Better spacing for tag badges */
+#current-tags .badge {
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+}
+
+/* Button close inside tags */
+.btn-close {
+    font-size: 0.6rem;
+    padding: 0.2rem;
+}
+
+/* Navbar active item */
+.navbar-nav .nav-link.active {
+    font-weight: bold;
+}
+
+/* Jumbotron styling */
+.jumbotron {
+    background-color: #f8f9fa;
+    border-radius: 0.3rem;
+    padding: 2rem 1rem;
+    margin-bottom: 2rem;
+}

@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}All Tags{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>All Tags</h1>
+        </div>
+        
+        {% if tags %}
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+            {% for tag in tags %}
+            <div class="col">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ tag.name }}</h5>
+                        <p class="card-text">{{ tag.images|length }} images</p>
+                    </div>
+                    <div class="card-footer d-flex justify-content-between">
+                        <a href="{{ url_for('tag.view_tag', tag_name=tag.name) }}" class="btn btn-sm btn-primary">
+                            <i class="bi bi-eye"></i> View Images
+                        </a>
+                        <a href="{{ url_for('tag.download_tag', tag_name=tag.name) }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-download"></i> Download
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            No tags have been created yet. Browse images and add tags to get started.
+        </div>
+        <p class="mt-4">
+            <a href="{{ url_for('main.images') }}" class="btn btn-primary">
+                <i class="bi bi-images me-2"></i>Browse Images
+            </a>
+        </p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
