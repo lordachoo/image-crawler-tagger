@@ -13,6 +13,26 @@ This application does not split the images into train, test, and validation sets
 - Download archives of images with specific tags
 - Responsive web interface
 
+## Screenshots
+
+### Starting a New Crawl Job
+![New Crawl Job Screen](docs/image-tagger-new-job.png)
+
+### Crawl Job List
+![Crawl Job List](docs/image-tagger-crawl-job-lists.png)
+
+### Job Details with Bulk Tagging
+![Job Details Screen](docs/image-tagger-job-details-example.png)
+
+### Bulk Tagging Interface
+![Bulk Tagging Example](docs/image-tagger-bulk-tagging-example.png)
+
+### Downloading Tagged Images
+![Tags Download Interface](docs/image-crawler-tags-download.png)
+
+### Image Details / Information
+![Image Details](docs/image-tagger-image-information.png)
+
 ## Prerequisites
 
 - Python 3.6+ (Python 3.10 recommended, compatibility issues with Python 3.13)
@@ -179,26 +199,6 @@ image-tagger/
 ├── commands.py           # Custom Flask commands
 └── requirements.txt      # Python dependencies
 ```
-
-## Screenshots
-
-### Starting a New Crawl Job
-![New Crawl Job Screen](docs/image-tagger-new-job.png)
-
-### Crawl Job List
-![Crawl Job List](docs/image-tagger-crawl-job-lists.png)
-
-### Job Details with Bulk Tagging
-![Job Details Screen](docs/image-tagger-job-details-example.png)
-
-### Bulk Tagging Interface
-![Bulk Tagging Example](docs/image-tagger-bulk-tagging-example.png)
-
-### Downloading Tagged Images
-![Tags Download Interface](docs/image-crawler-tags-download.png)
-
-### Image Details / Information
-![Image Details](docs/image-tagger-image-information.png)
 
 ## License
 

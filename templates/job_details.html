@@ -66,9 +66,14 @@
                     <div class="card-body">
                         <h5 class="card-title">Bulk Tag Selected Images</h5>
                         <div class="input-group">
-                            <input type="text" id="quick-tag-input" class="form-control" placeholder="Enter a tag..." list="available-tags">
+                            <input type="text" id="quick-tag-input" class="form-control" placeholder="Enter a tag..." list="available-tags" autocomplete="off">
                             <datalist id="available-tags">
-                                {% for tag in all_tags %}
+                                <!-- Common tags will be shown at the top -->
+                                {% for tag in all_tags[:10] %}
+                                <option value="{{ tag.name }}" data-is-common="true">{{ tag.name }} (common)</option>
+                                {% endfor %}
+                                <!-- All other tags -->
+                                {% for tag in all_tags[10:] %}
                                 <option value="{{ tag.name }}">{{ tag.name }}</option>
                                 {% endfor %}
                             </datalist>
@@ -129,12 +134,20 @@
                             {% endif %}
                         </div>
                         <div class="quick-tag-add mt-2">
-                            <div class="input-group input-group-sm">
-                                <input type="text" class="form-control single-tag-input" 
-                                    placeholder="Add tag..." data-image-id="{{ image.id }}" list="available-tags">
-                                <button class="btn btn-outline-secondary btn-sm add-single-tag" 
-                                    data-image-id="{{ image.id }}">
-                                    <i class="bi bi-plus"></i>
+                            <div class="input-group mb-1">
+                                <input type="text" class="form-control form-control-sm single-tag-input" placeholder="Add tag..." data-image-id="{{ image.id }}" list="available-tags-{{ image.id }}" autocomplete="off">
+                                <datalist id="available-tags-{{ image.id }}">
+                                    <!-- Common tags will be shown at the top -->
+                                    {% for tag in all_tags[:10] %}
+                                    <option value="{{ tag.name }}" data-is-common="true">{{ tag.name }} (common)</option>
+                                    {% endfor %}
+                                    <!-- All other tags -->
+                                    {% for tag in all_tags[10:] %}
+                                    <option value="{{ tag.name }}">{{ tag.name }}</option>
+                                    {% endfor %}
+                                </datalist>
+                                <button class="btn btn-sm btn-success add-single-tag" type="button" data-image-id="{{ image.id }}">
+                                    <i class="bi bi-plus-lg"></i>
                                 </button>
                             </div>
                         </div>
@@ -261,9 +274,82 @@
                 } else if (quickTagInput) {
                     // If no images selected, set the tag in the input field
                     quickTagInput.value = tagName;
+                    // Focus on the input field for further editing if needed
+                    quickTagInput.focus();
                 }
             });
         });
+        
+        // Add events to handle automatic tag submission when selecting from dropdown
+        document.querySelectorAll('.single-tag-input').forEach(input => {
+            // When input is focused, show its dropdown
+            input.addEventListener('focus', function() {
+                // This triggers the browser's native datalist dropdown
+            });
+            
+            // When a tag is selected from the dropdown
+            input.addEventListener('input', function(e) {
+                const tagName = this.value.trim();
+                const imageId = this.dataset.imageId;
+                
+                // Check if the input value matches an option in the datalist
+                const datalistId = this.getAttribute('list');
+                const options = document.querySelectorAll(`#${datalistId} option`);
+                let isValidOption = false;
+                
+                for (const option of options) {
+                    if (option.value === tagName) {
+                        isValidOption = true;
+                        break;
+                    }
+                }
+                
+                // If it's a valid option from the dropdown and not just typing
+                if (isValidOption && tagName) {
+                    // Small delay to ensure this is a selection event, not just typing
+                    setTimeout(() => {
+                        if (this.value === tagName) {
+                            addTagToSingleImage(imageId, tagName);
+                            this.value = ''; // Clear after adding
+                        }
+                    }, 50);
+                }
+            });
+        });
+        
+        // Also for the bulk tagging input
+        if (quickTagInput) {
+            quickTagInput.addEventListener('focus', function() {
+                // This triggers the datalist dropdown when clicking the input
+            });
+            
+            // When a tag is selected from the dropdown for bulk tagging
+            quickTagInput.addEventListener('input', function(e) {
+                const tagName = this.value.trim();
+                
+                // Check if the input value matches an option in the datalist
+                const options = document.querySelectorAll('#available-tags option');
+                let isValidOption = false;
+                
+                for (const option of options) {
+                    if (option.value === tagName) {
+                        isValidOption = true;
+                        break;
+                    }
+                }
+                
+                // If it's a valid option from the dropdown and there are selected images
+                if (isValidOption && tagName && selectedImages.length > 0) {
+                    // Small delay to ensure this is a selection event, not just typing
+                    setTimeout(() => {
+                        if (this.value === tagName) {
+                            addTagToBulkImages(selectedImages, tagName);
+                            this.value = ''; // Clear after adding
+                        }
+                    }, 50);
+                }
+            });
+        }
     });
     
     // Update UI based on selected images
