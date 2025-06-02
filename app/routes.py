@@ -135,7 +135,10 @@ def view_tag(tag_name):
     page = request.args.get('page', 1, type=int)
     per_page = 24
     
-    pagination = tag.images.paginate(page=page, per_page=per_page, error_out=False)
+    # In SQLAlchemy 2.0, we need to use a proper query object for pagination
+    # rather than directly paginating the relationship
+    query = Image.query.join(Image.tags).filter(Tag.id == tag.id)
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     images = pagination.items
     
     return render_template('tag.html', tag=tag, images=images, pagination=pagination)
