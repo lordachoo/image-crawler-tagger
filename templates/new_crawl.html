@@ -28,8 +28,8 @@
                     <div class="mb-3">
                         <label for="max_images" class="form-label">Maximum Images</label>
                         <input type="number" class="form-control" id="max_images" name="max_images" 
-                               min="1" max="1000" value="100" required>
-                        <div class="form-text">Maximum number of images to download.</div>
+                               min="1" max="{{ config['MAX_CRAWL_IMAGES'] }}" value="100" required>
+                        <div class="form-text">Maximum number of images to download (limit: {{ config['MAX_CRAWL_IMAGES'] }}).</div>
                     </div>
                     
                     <div class="mb-3">

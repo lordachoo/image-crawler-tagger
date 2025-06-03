@@ -82,7 +82,15 @@ def new_crawl():
     if request.method == 'POST':
         url = request.form.get('url')
         depth = int(request.form.get('depth', 1))
-        max_images = int(request.form.get('max_images', 100))
+        
+        # Get max_images with limit from configuration
+        try:
+            max_images = int(request.form.get('max_images', 100))
+            max_limit = current_app.config.get('MAX_CRAWL_IMAGES', 10000)
+            max_images = min(max_images, max_limit)  # Ensure it doesn't exceed the configured maximum
+        except ValueError:
+            max_images = 100  # Default if invalid input
+            
         formats = request.form.get('formats', '')
         
         # Create new crawl job

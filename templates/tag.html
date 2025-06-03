@@ -20,6 +20,23 @@
             </a>
         </div>
         
+        <!-- Filename filter -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" id="filename-filter" class="form-control" placeholder="Filter by filename...">
+                    <button class="btn btn-outline-secondary" type="button" id="clear-filter">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <div class="form-text">Type to filter images by filename (e.g., "AK-" will show only filenames containing "AK-")</div>
+            </div>
+            <div class="col-md-6 text-end align-self-center">
+                <span id="filter-count" class="badge bg-secondary">Showing all {{ images|length }} images</span>
+            </div>
+        </div>
+        
         {% if images %}
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 mb-4">
             {% for image in images %}
@@ -116,4 +133,56 @@
         {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Filename filtering functionality
+        const filenameFilter = document.getElementById('filename-filter');
+        const clearFilterBtn = document.getElementById('clear-filter');
+        const filterCount = document.getElementById('filter-count');
+        const totalImageCount = parseInt('{{ images|length }}', 10);
+        const imageCards = document.querySelectorAll('.card.h-100');
+        
+        function filterImages() {
+            const filterText = filenameFilter.value.toLowerCase().trim();
+            let visibleCount = 0;
+            
+            imageCards.forEach(card => {
+                // Get the filename from the card title
+                const filenameEl = card.querySelector('.card-title');
+                if (!filenameEl) return;
+                
+                const filename = filenameEl.textContent.toLowerCase();
+                
+                if (filterText === '' || filename.includes(filterText)) {
+                    card.closest('.col').style.display = '';
+                    visibleCount++;
+                } else {
+                    card.closest('.col').style.display = 'none';
+                }
+            });
+            
+            // Update the counter
+            if (filterText === '') {
+                filterCount.textContent = `Showing all ${totalImageCount} images`;
+            } else {
+                filterCount.textContent = `Showing ${visibleCount} of ${totalImageCount} images`;
+            }
+        }
+        
+        // Add event listeners
+        if (filenameFilter) {
+            filenameFilter.addEventListener('input', filterImages);
+        }
+        
+        if (clearFilterBtn) {
+            clearFilterBtn.addEventListener('click', function() {
+                filenameFilter.value = '';
+                filterImages();
+            });
+        }
+    });
+</script>
 {% endblock %}

@@ -15,6 +15,9 @@ This application does not split the images into train, test, and validation sets
 
 ## Screenshots
 
+### Home Screen
+![Home Screen](docs/image-tagger-home-screen.png)
+
 ### Starting a New Crawl Job
 ![New Crawl Job Screen](docs/image-tagger-new-job.png)
 
@@ -125,6 +128,16 @@ This application does not split the images into train, test, and validation sets
    
    ### Update database connection settings
    After setting up PostgreSQL, adjust the connection settings in the `.env` file:
+
+## Environment Variables
+
+The application can be configured with the following environment variables:
+
+- `DATABASE_URL`: The database connection string (default: `postgresql://postgres:postgres@localhost/image_tagger`)
+- `SECRET_KEY`: Flask secret key for session security
+- `IMAGE_STORAGE_PATH`: Path to store downloaded images
+- `MAX_CRAWL_IMAGES`: Maximum number of images allowed per crawl job (default: 10000)
+
    ```
    DATABASE_URL=postgresql://username:password@localhost/image_tagger
    SECRET_KEY=your_secret_key

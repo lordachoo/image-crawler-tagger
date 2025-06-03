@@ -18,6 +18,7 @@ def create_app(test_config=None):
         SQLALCHEMY_DATABASE_URI='postgresql://postgres:postgres@localhost/image_tagger',
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         IMAGE_STORAGE_PATH=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'storage'),
+        MAX_CRAWL_IMAGES=10000,  # Default max images per crawl job
     )
 
     # Load config from .env file if it exists
@@ -32,6 +33,8 @@ def create_app(test_config=None):
             app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
         if os.environ.get('IMAGE_STORAGE_PATH'):
             app.config['IMAGE_STORAGE_PATH'] = os.environ.get('IMAGE_STORAGE_PATH')
+        if os.environ.get('MAX_CRAWL_IMAGES'):
+            app.config['MAX_CRAWL_IMAGES'] = int(os.environ.get('MAX_CRAWL_IMAGES'))
 
     # If test config provided, use that instead
     if test_config is not None:
