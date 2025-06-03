@@ -122,12 +122,31 @@ def list_jobs():
 def view_job(job_id):
     """View details of a specific crawl job"""
     job = CrawlJob.query.get_or_404(job_id)
-    images = Image.query.filter_by(crawl_job_id=job.id).all()
+    
+    # Implement pagination
+    page = request.args.get('page', 1, type=int)
+    per_page = 24  # Same as tag view for consistency
+    
+    # Query with pagination
+    pagination = Image.query.filter_by(crawl_job_id=job.id).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
+    images = pagination.items
+    
+    # Get total image count for the job (for display purposes)
+    total_images = Image.query.filter_by(crawl_job_id=job.id).count()
     
     # Get all tags for dropdowns and quick tagging
     all_tags = Tag.query.order_by(Tag.name).all()
     
-    return render_template('job_details.html', job=job, images=images, all_tags=all_tags)
+    return render_template(
+        'job_details.html', 
+        job=job, 
+        images=images, 
+        all_tags=all_tags, 
+        pagination=pagination,
+        total_images=total_images
+    )
 
 # Tag routes
 @tag_bp.route('/')
