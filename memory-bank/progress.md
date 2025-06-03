@@ -9,6 +9,8 @@
    - Crawl job management
 
 2. **Recent Additions**:
+   - Pagination system for job details page to handle large image collections (5000+ images)
+   - Job-specific tag filtering to show only relevant tags in the interface
    - Bulk tagging system on job details and images pages
    - Tag suggestions via dropdown menus using HTML5 datalist
    - Common tags section for quick application of frequent tags

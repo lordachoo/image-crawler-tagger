@@ -136,7 +136,11 @@ def view_job(job_id):
     # Get total image count for the job (for display purposes)
     total_images = Image.query.filter_by(crawl_job_id=job.id).count()
     
-    # Get all tags for dropdowns and quick tagging
+    # Get only tags that are used in this job's images
+    # Using a subquery to find all tags associated with this job's images
+    job_tags = Tag.query.join(Tag.images).filter(Image.crawl_job_id == job.id).distinct().order_by(Tag.name).all()
+    
+    # Also get all tags for the dropdown (but we'll show job tags first in the UI)
     all_tags = Tag.query.order_by(Tag.name).all()
     
     return render_template(
@@ -144,6 +148,7 @@ def view_job(job_id):
         job=job, 
         images=images, 
         all_tags=all_tags, 
+        job_tags=job_tags,
         pagination=pagination,
         total_images=total_images
     )

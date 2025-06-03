@@ -68,13 +68,9 @@
                         <div class="input-group">
                             <input type="text" id="quick-tag-input" class="form-control" placeholder="Enter a tag..." list="available-tags" autocomplete="off">
                             <datalist id="available-tags">
-                                <!-- Common tags will be shown at the top -->
-                                {% for tag in all_tags[:10] %}
-                                <option value="{{ tag.name }}" data-is-common="true">{{ tag.name }} (common)</option>
-                                {% endfor %}
-                                <!-- All other tags -->
-                                {% for tag in all_tags[10:] %}
-                                <option value="{{ tag.name }}">{{ tag.name }}</option>
+                                <!-- Only show tags used in this job and allow creating new ones -->
+                                {% for tag in job_tags %}
+                                <option value="{{ tag.name }}">{{ tag.name }} (used in this job)</option>
                                 {% endfor %}
                             </datalist>
                             <button id="add-tag-to-selected" class="btn btn-success" disabled>
@@ -88,13 +84,17 @@
             <div class="col-md-6">
                 <div class="card h-100">
                     <div class="card-body">
-                        <h5 class="card-title">Common Tags</h5>
+                        <h5 class="card-title">Common Tags in This Job</h5>
                         <div class="common-tags">
-                            {% for tag in all_tags[:10] %}
-                            <button type="button" class="btn btn-sm btn-outline-secondary me-1 mb-1 common-tag-btn" data-tag-name="{{ tag.name }}">
-                                {{ tag.name }}
-                            </button>
-                            {% endfor %}
+                            {% if job_tags %}
+                                {% for tag in job_tags[:10] %}
+                                <button type="button" class="btn btn-sm btn-outline-secondary me-1 mb-1 common-tag-btn" data-tag-name="{{ tag.name }}">
+                                    {{ tag.name }}
+                                </button>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-muted">No tags have been assigned to images in this job yet.</p>
+                            {% endif %}
                         </div>
                         <div class="form-text mt-2">Click a tag to add it to selected images.</div>
                     </div>
@@ -154,13 +154,9 @@
                             <div class="input-group mb-1">
                                 <input type="text" class="form-control form-control-sm single-tag-input" placeholder="Add tag..." data-image-id="{{ image.id }}" list="available-tags-{{ image.id }}" autocomplete="off">
                                 <datalist id="available-tags-{{ image.id }}">
-                                    <!-- Common tags will be shown at the top -->
-                                    {% for tag in all_tags[:10] %}
-                                    <option value="{{ tag.name }}" data-is-common="true">{{ tag.name }} (common)</option>
-                                    {% endfor %}
-                                    <!-- All other tags -->
-                                    {% for tag in all_tags[10:] %}
-                                    <option value="{{ tag.name }}">{{ tag.name }}</option>
+                                    <!-- Only show tags used in this job and allow creating new ones -->
+                                    {% for tag in job_tags %}
+                                    <option value="{{ tag.name }}">{{ tag.name }} (used in this job)</option>
                                     {% endfor %}
                                 </datalist>
                                 <button class="btn btn-sm btn-success add-single-tag" type="button" data-image-id="{{ image.id }}">

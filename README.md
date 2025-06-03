@@ -7,11 +7,12 @@ This application does not split the images into train, test, and validation sets
 ## Features
 
 - Crawl websites for images with configurable options
-- View and browse downloaded images 
-- Tag images with multiple custom tags
+- View and browse downloaded images with pagination for large collections
+- Tag images with multiple custom tags using context-aware tag suggestions
+- Bulk tagging functionality for efficiently categorizing multiple images
 - View all images with specific tags
 - Download archives of images with specific tags
-- Responsive web interface
+- Responsive web interface optimized for both desktop and mobile devices
 
 ## Screenshots
 
